@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>近期全球地震分布图</title>
+    <!-- 引入ArcGIS JS API 4.29 样式与脚本 -->
+    <link rel="stylesheet" href="https://js.arcgis.com/4.29/esri/themes/light/main.css">
+    <script src="https://js.arcgis.com/4.29/"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft YaHei", sans-serif;
+        }
+        /* 1. 页眉区域 */
+        .header {
+            height: 60px;
+            background: #005e95;
+            color: white;
+            line-height: 60px;
+            text-align: center;
+            font-size: 22px;
+            font-weight: bold;
+        }
+        /* 2. 主体布局：地图 + 底图库 */
+        .main-container {
+            display: flex;
+            height: calc(100vh - 60px);
+        }
+        /* 底图库区域 */
+        .basemap-gallery {
+            width: 260px;
+            background: #f5f7fa;
+            border-right: 1px solid #ddd;
+            padding: 15px;
+            overflow-y: auto;
+        }
+        .basemap-gallery h3 {
+            color: #005e95;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+        /* 地图区域 */
+        #mapView {
+            flex: 1;
+        }
+    </style>
+</head>
+<body>
+    <!-- 区域1：页眉 -->
+    <div class="header">全球近期地震分布图</div>
+
+    <!-- 区域2 + 区域3：地图 + 底图库 -->
+    <div class="main-container">
+        <div class="basemap-gallery">
+            <h3>📊 底图切换</h3>
+            <div id="basemapGalleryDiv"></div>
+        </div>
+        <div id="mapView"></div>
+    </div>
+
+    <script>
+        require([
+            "esri/Map",
+            "esri/views/MapView",
+            "esri/layers/FeatureLayer",
+            "esri/widgets/BasemapGallery",
+            "esri/widgets/Legend",
+            "esri/widgets/ScaleBar",
+            "esri/widgets/Search",
+            "esri/widgets/LayerList"
+        ], function(Map, MapView, FeatureLayer, BasemapGallery, Legend, ScaleBar, Search, LayerList) {
+
+            // 1. 创建地图对象
+            const map = new Map({
+                basemap: "topo-vector" // 默认底图
+            });
+
+            // 2. 创建地图视图
+            const view = new MapView({
+                container: "mapView",
+                map: map,
+                center: [105, 35], 
+                zoom: 3
+            });
+
+            // ======================
+            // 加载 ArcGIS Online 公开专题图层（满足要求）
+            // ======================
+            const featureLayer = new FeatureLayer({
+                url: "https://services9.arcgis.com/RHVPKKiFTONKtxq3/arcgis/rest/services/USGS_Seismic_Data_v1/FeatureServer/0"
+            });
+            title: "近期全球地震分布图"
+            map.add(featureLayer);
+
+            // ======================
+            // 添加所有要求的微件
+            // ======================
+            // 1. 比例尺
+            const scaleBar = new ScaleBar({ view: view, unit: "metric" });
+            view.ui.add(scaleBar, "bottom-left");
+
+            // 2. 图例
+            const legend = new Legend({ view: view });
+            view.ui.add(legend, "bottom-right");
+
+            // 3. 搜索框
+            const search = new Search({ view: view });
+            view.ui.add(search, "top-right");
+
+            // 4. 图层列表（图层控制）
+            const layerList = new LayerList({ view: view });
+            view.ui.add(layerList, "top-left");
+
+            // 底图库微件
+            const basemapGallery = new BasemapGallery({
+                view: view,
+                container: "basemapGalleryDiv"
+            });
+        });
+    </script>
+</body>
+</html>
